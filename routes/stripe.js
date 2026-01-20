@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getStripeConfig, createPaymentIntent, handleWebhook } = require('../conrollers/stripe');
+const { getStripeConfig, createPaymentIntent, handleWebhook } = require('../controllers/stripe');
 
 // Get Stripe configuration (publishable key)
 router.post('/config', getStripeConfig);

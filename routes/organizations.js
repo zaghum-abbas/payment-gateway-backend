@@ -1,6 +1,6 @@
 const express = require('express');
-const { addOrganization, getAllOrganizations, getOrganizationTransactions, getAllTransactions } = require('../conrollers');
-const { createPaymentLink, getTransaction, updateTransaction } = require('../conrollers/organizations');
+const { addOrganization, getAllOrganizations, getOrganizationTransactions, getAllTransactions } = require('../controllers');
+const { createPaymentLink, getTransaction, updateTransaction } = require('../controllers/organizations');
 const { authorizeOrg } = require('../middleware/auth.middleware');
 const router = express.Router();
 

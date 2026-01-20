@@ -1,5 +1,5 @@
-const { Transaction } = require("../modals/index");
-const { Organization } = require("../modals/index");
+const { Transaction } = require("../models/index");
+const { Organization } = require("../models/index");
 
 
 const addOrganization = async ({ name, api_token, organization_id, owner_email }) => {

@@ -1,4 +1,4 @@
-const { Organization } = require('../modals/index');
+const { Organization } = require('../models/index');
 const bcrypt = require('bcrypt');
 
 const authorizeOrg = async (req, res, next) => {
@@ -8,7 +8,7 @@ const authorizeOrg = async (req, res, next) => {
     }
 
     const rawToken = authHeader.split(' ')[1];
-    const orgId = req.body.organization_id; 
+    const orgId = req.body.organization_id;
 
     const org = await Organization.findOne({ organization_id: orgId });
     if (!org) return res.status(401).json({ error: 'Invalid Organization' });
