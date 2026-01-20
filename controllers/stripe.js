@@ -1,5 +1,13 @@
 const { OrganizationsService } = require('../services');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Validate Stripe key exists
+if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('CRITICAL: STRIPE_SECRET_KEY is not set in environment variables');
+}
+
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? require('stripe')(process.env.STRIPE_SECRET_KEY)
+    : null;
 
 const getStripeConfig = async (req, res) => {
     const { organization_id } = req.body;
@@ -14,6 +22,13 @@ const getStripeConfig = async (req, res) => {
 
 const createPaymentIntent = async (req, res) => {
     try {
+        // Check if Stripe is initialized
+        if (!stripe) {
+            return res.status(500).json({
+                error: 'Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.'
+            });
+        }
+
         const { uuid, amount, currency, customer_email, customer_name } = req.body;
 
         // 1. Verify transaction exists and is pending
