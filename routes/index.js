@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const organizationsRouter = require('./organizations');
 const stripeRouter = require('./stripe');
 const transactionsRouter = require('./transactions');
