@@ -32,14 +32,14 @@ const TransactionSchema = new mongoose.Schema({
     customer_email: { type: String },
     status: {
         type: String,
-        enum: ['paid', 'unpaid'],
+        enum: ['paid', 'unpaid', 'refunded', 'failed'],
         default: 'unpaid'
     },
     provider: { type: String },
     stripe_payment_intent_id: { type: String },
     stripe_payment_id: { type: String },
     payment_method: { type: String },
-
+    refund_ammount: { type: Number },
 }, { timestamps: true });
 
 TransactionSchema.index({ uuid: 1, status: 1 });

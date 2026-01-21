@@ -76,56 +76,6 @@ const createPaymentIntent = async (req, res) => {
 };
 
 
-console.log("process.env.STRIPE_WEBHOOK_SECRET", process.env.STRIPE_WEBHOOK_SECRET)
-// const handleWebhook = async (req, res) => {
-//     console.log('Webhook received:', req);
-//     const sig = req.headers["stripe-signature"];
-//     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-//     let event;
-
-//     try {
-
-//         event = stripe.Webhook.construct_event(req.body, sig, webhookSecret)
-//         console.log("event", event);
-//     } catch (err) {
-//         console.error('Webhook signature verification failed:', err.message);
-//         return res.status(400).send(`Webhook Error: ${err.message}`);
-//     }
-
-//     console.log('Webhook event:', event);
-//     switch (event.type) {
-//         case 'payment_intent.succeeded':
-//             const paymentIntent = event.data.object;
-//             const uuid = paymentIntent.metadata.transaction_uuid;
-
-//             // Update transaction status
-//             await OrganizationsService.updateTransaction(uuid, {
-//                 status: 'paid',
-//                 stripe_payment_id: paymentIntent.id,
-//                 payment_method: paymentIntent.payment_method
-//             });
-
-//             console.log(`Payment succeeded for transaction: ${uuid}`);
-//             break;
-
-//         case 'payment_intent.payment_failed':
-//             const failedIntent = event.data.object;
-//             const failedUuid = failedIntent.metadata.transaction_uuid;
-
-//             await OrganizationsService.updateTransaction(failedUuid, {
-//                 status: 'unpaid'
-//             });
-
-//             console.log(`Payment failed for transaction: ${failedUuid}`);
-//             break;
-
-//         default:
-//             console.log(`Unhandled event type ${event.type}`);
-//     }
-
-//     res.json({ received: true });
-// };
 
 const handleWebhook = async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -161,6 +111,16 @@ const handleWebhook = async (req, res) => {
             });
             break;
 
+        case 'charge.refunded':
+            const refundedIntent = event.data.object;
+            const refundedUuid = refundedIntent.metadata.transaction_uuid;
+
+            await OrganizationsService.updateTransaction(refundedUuid, {
+                status: 'refunded',
+                refund_ammount: refundedIntent.amount_refunded / 100
+            });
+            break;
+
         default:
             console.log(`Unhandled event type: ${event.type}`);
     }
@@ -168,8 +128,28 @@ const handleWebhook = async (req, res) => {
     res.json({ received: true });
 };
 
+
+const handleRefundRequest = async (req, res) => {
+    try {
+        const { payment_intent_id, amount, reason, uuid } = req.body;
+        const amountInCents = amount * 100;
+        const refund = await stripe.refunds.create({
+            payment_intent: payment_intent_id,
+            amount: amountInCents,
+            reason: reason
+        });
+
+        console.log('✅ Refund successful:', refund.id);
+        res.status(200).json({ success: true, refund });
+    } catch (error) {
+        console.error('❌ Refund failed:', error.message);
+        res.status(400).json({ error: error.message });
+    }
+};
+
 module.exports = {
     getStripeConfig,
     createPaymentIntent,
-    handleWebhook
+    handleWebhook,
+    handleRefundRequest
 }
