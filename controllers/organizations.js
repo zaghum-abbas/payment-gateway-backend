@@ -48,7 +48,7 @@ const createPaymentLink = async (req, res) => {
             currency: currency || 'GBP',
             customer_name,
             customer_email,
-            status: 'pending',
+            status: 'unpaid',
             order_id: order_id,
 
         });

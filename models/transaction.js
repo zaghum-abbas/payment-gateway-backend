@@ -32,8 +32,8 @@ const TransactionSchema = new mongoose.Schema({
     customer_email: { type: String },
     status: {
         type: String,
-        enum: ['pending', 'success', 'failed', 'expired'],
-        default: 'pending'
+        enum: ['paid', 'unpaid'],
+        default: 'unpaid'
     },
     provider: { type: String },
     stripe_payment_intent_id: { type: String },

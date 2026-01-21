@@ -3,15 +3,13 @@ const cors = require('cors');
 const routes = require('./routes');
 const connectDB = require('./config/db');
 require('dotenv').config();
-
 const PORT = process.env.PORT || 3000;
 
-// if (process.env.NODE_ENV !== 'production') {
-// }
 
 const app = express();
-
+app.use("/api/v1/stripe/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get('/', (req, res) => {
