@@ -6,15 +6,11 @@ const TransactionSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    organization_id: {
-        type: String,
-        required: true,
-        index: true
-    },
-    order_id: {
-        type: String,
-        required: true
-    },
+    payment_title:{ type: String },
+    payment_description:{ type: String },
+    returnUrl:{ type: String },
+    customer_name: { type: String },
+    customer_email: { type: String },
     amount: {
         type: Number,
         required: true
@@ -23,22 +19,32 @@ const TransactionSchema = new mongoose.Schema({
         type: String,
         default: 'GBP'
     },
+    provider: { type: String },
+    cardEnabled:{type: Boolean, default: false},
+    bankTransferAutomatic:{type: Boolean, default: false},
+    bankTransferManual:{type: Boolean, default: false},
+    organization_id: {
+        type: String,
+        ref:"Organization",
+        required: true,
+        index: true
+    },
+    order_id: {
+        type: String,
+        required: true
+    },
     processing_fee: {
         type: Number,
         default: 0.00
     },
-    logo_url: { type: String },
-    customer_name: { type: String },
-    customer_email: { type: String },
     status: {
         type: String,
         enum: ['paid', 'unpaid', 'refunded', 'failed'],
         default: 'unpaid'
     },
-    provider: { type: String },
+    paymentLink: { type: String },
     stripe_payment_intent_id: { type: String },
     stripe_payment_id: { type: String },
-    payment_method: { type: String },
     refund_ammount: { type: Number },
 }, { timestamps: true });
 

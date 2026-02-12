@@ -15,10 +15,6 @@ const OrganizationSchema = new mongoose.Schema({
         required: true, 
         unique: true 
     },
-    owner_email: { 
-        type: String, 
-        required: true 
-    },
     status: { 
         type: String, 
         enum: ['active', 'suspended'], 
