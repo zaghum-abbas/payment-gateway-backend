@@ -1,11 +1,12 @@
 const express = require('express');
 const { addOrganization, getAllOrganizations, getOrganizationTransactions, getAllTransactions } = require('../controllers');
-const { createPaymentLink, getTransaction, updateTransaction, editPaymentLink, deletePaymentLink } = require('../controllers/organizations');
+const { createPaymentLink, getTransaction, updateTransaction, editPaymentLink, deletePaymentLink, deleteOrganization } = require('../controllers/organizations');
 const { authorizeOrg } = require('../middleware/auth.middleware');
 const router = express.Router();
 
 router.post('/add-organization', addOrganization);
 router.get('/', getAllOrganizations);
+router.delete('/:organization_id', deleteOrganization);
 router.get('/transactions/:organization_id', getOrganizationTransactions);
 router.post("/create-payment-link", authorizeOrg, createPaymentLink);
 router.get("/transaction/:uuid", getTransaction);

@@ -247,6 +247,31 @@ const getAllTransactions = async (req, res) => {
     }
 }
 
+const deleteOrganization = async (req, res) => {
+    try {
+        const { organization_id } = req.params;
+        const deletedOrg = await OrganizationsService.deleteOrganization(organization_id);
+
+        if (!deletedOrg) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Organization deleted successfully',
+            data: {
+                organization_id: deletedOrg.organization_id,
+                name: deletedOrg.name
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 module.exports = {
     addOrganization,
     createPaymentLink,
@@ -256,5 +281,6 @@ module.exports = {
     deletePaymentLink,
     getAllOrganizations,
     getOrganizationTransactions,
-    getAllTransactions
+    getAllTransactions,
+    deleteOrganization
 }

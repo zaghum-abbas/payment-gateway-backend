@@ -67,6 +67,17 @@ const getAllOrganizations = async () => {
     return organizations;
 };
 
+const deleteOrganization = async (organization_id) => {
+    const organization = await Organization.findOne({ organization_id });
+    if (!organization) {
+        return null;
+    }
+    // Delete all transactions for this organization first (cascade)
+    await Transaction.deleteMany({ organization_id });
+    const deletedOrg = await Organization.findOneAndDelete({ organization_id });
+    return deletedOrg;
+};
+
 const getTransactionsByOrganization = async (organization_id) => {
     const transactions = await Transaction.find({ organization_id }).sort({ createdAt: -1 }).populate({
         path: 'organization_id',   
@@ -95,5 +106,6 @@ module.exports = {
     deletePaymentLink,
     getAllOrganizations,
     getTransactionsByOrganization,
-    getAllTransactions
+    getAllTransactions,
+    deleteOrganization
 }
