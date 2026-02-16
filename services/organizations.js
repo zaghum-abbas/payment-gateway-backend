@@ -17,18 +17,23 @@ const createPaymentLink = async ({ uuid, organization_id, amount, currency, cust
     return linkPath;
 };
 
-const getTransactionByUuid = async (uuid) => {
-    const transaction = await Transaction.findOne({ uuid });
-    if (!transaction) {
-        return null;
-    }
-    const organization = await Organization.findOne({ organization_id: transaction.organization_id });
-    return {
-        ...transaction.toObject(),
-        organization_name: organization?.name || '',
-        logo_url: organization?.logo_url || ''
-    };
-};
+// const getTransactionByUuid = async (uuid) => {
+//     const transaction = await Transaction.findOne({ uuid });
+//     if (!transaction) {
+//         return null;
+//     }
+//     const organization = await Organization.findOne({ organization_id: transaction.organization_id });
+//     console.log("organization", organization);
+//     return {
+//         ...transaction.toObject(),
+//         organization_name: organization?.name || '',
+//         organization_status: organization?.status || '',
+//         logo_url: organization?.logo_url || ''
+//     };
+// };
+
+
+
 
 const updateTransaction = async (uuid, updateData) => {
     const transaction = await Transaction.findOneAndUpdate(
@@ -78,34 +83,56 @@ const deleteOrganization = async (organization_id) => {
     return deletedOrg;
 };
 
-const getTransactionsByOrganization = async (organization_id) => {
-    const transactions = await Transaction.find({ organization_id }).sort({ createdAt: -1 }).populate({
-        path: 'organization_id',   
-        model: 'Organization',     
-        foreignField: 'organization_id',
-      });
-    return transactions;
+const updateOrganizationStatus = async (organization_id, status) => {
+    // Validate status
+    if (!['active', 'inactive'].includes(status)) {
+        throw new Error('Status must be either "active" or "inactive"');
+    }
+    
+    const updatedOrg = await Organization.findOneAndUpdate(
+        { organization_id },
+        { $set: { status } },
+        { new: true, runValidators: true }
+    );
+    
+    return updatedOrg;
 };
 
-const getAllTransactions = async () => {
-    const transactions = await Transaction.find().sort({ createdAt: -1 }).populate({
+const getTransactionsByOrganization = async (organization_id, page, limit, search) => {
+    const skip = (page - 1) * limit;
+    const transactions = await Transaction.find({ organization_id, $or: [
+        { customer_name: { $regex: search, $options: 'i' } }, 
+        { order_id: { $regex: search, $options: 'i' } },
+        { status: { $regex: search, $options: 'i' } }, 
+        { provider: { $regex: search, $options: 'i' } } 
+    ] }).skip(skip).limit(limit).sort({ createdAt: -1 }).populate({
         path: 'organization_id',   
         model: 'Organization',     
         foreignField: 'organization_id',
       });
-    return transactions;
+    const total = await Transaction.countDocuments({ organization_id }).sort({ createdAt: -1 });
+    return {
+        transactions,
+        pagination: {
+            total,
+            page,
+            limit
+        }
+    };
 };
+
+
 
 module.exports = {
     addOrganization,
     getOrganization,
     createPaymentLink,
-    getTransactionByUuid,
     updateTransaction,
     updatePaymentLink,
     deletePaymentLink,
     getAllOrganizations,
     getTransactionsByOrganization,
-    getAllTransactions,
-    deleteOrganization
+    deleteOrganization,
+    updateOrganizationStatus,
+
 }

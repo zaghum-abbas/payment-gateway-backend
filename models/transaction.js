@@ -19,7 +19,7 @@ const TransactionSchema = new mongoose.Schema({
         type: String,
         default: 'GBP'
     },
-    provider: { type: String },
+    provider: {type: Array, default: []},
     cardEnabled:{type: Boolean, default: false},
     bankTransferAutomatic:{type: Boolean, default: false},
     bankTransferManual:{type: Boolean, default: false},

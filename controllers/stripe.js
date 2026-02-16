@@ -36,9 +36,22 @@ const createPaymentIntent = async (req, res) => {
 
         // 1. Verify transaction exists and is pending
         const transaction = await OrganizationsService.getTransactionByUuid(uuid);
+
+
+        console.log("transaction", transaction);
         if (!transaction) {
             return res.status(404).json({ error: 'Transaction not found' });
         }
+
+        if (transaction.organization_details.status === 'inactive') {
+            return res.status(400).json({ error: 'Organization is inactive' });
+        }
+
+
+        if (transaction.status === 'paid') {
+            return res.status(400).json({ error: 'Transaction already paid' });
+        }
+
 
         if (transaction.status !== 'unpaid') {
             return res.status(400).json({ error: 'Transaction already processed' });

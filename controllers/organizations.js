@@ -76,8 +76,11 @@ const createPaymentLink = async (req, res) => {
 
 const getTransaction = async (req, res) => {
     try {
-        const { uuid } = req.params;
-        const transaction = await OrganizationsService.getTransactionByUuid(uuid);
+        const { uuid, } = req.params;
+        const { page , limit  ,search} = req.query;
+        const transaction = await OrganizationsService.getTransactions(uuid, page, limit, search);
+
+        console.log("transaction", transaction);
 
         if (!transaction) {
             return res.status(404).json({
@@ -218,12 +221,14 @@ const getAllOrganizations = async (req, res) => {
 
 const getOrganizationTransactions = async (req, res) => {
     try {
+        const { page = 1, limit = 10 ,search} = req.query;
         const { organization_id } = req.params;
-        const transactions = await OrganizationsService.getTransactionsByOrganization(organization_id);
+        const transactions = await OrganizationsService.getTransactionsByOrganization(organization_id, page, limit, search);
 
         res.json({
             success: true,
-            data: transactions
+            data: transactions.transactions,
+            pagination: transactions.pagination
         });
 
     } catch (error) {
@@ -231,21 +236,7 @@ const getOrganizationTransactions = async (req, res) => {
     }
 }
 
-const getAllTransactions = async (req, res) => {
-    try {
-        const transactions = await OrganizationsService.getAllTransactions();
 
-        res.json({
-            success: true,
-            data: transactions
-        });
-
-    } catch (error) {
-
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-}
 
 const deleteOrganization = async (req, res) => {
     try {
@@ -272,6 +263,48 @@ const deleteOrganization = async (req, res) => {
     }
 }
 
+const updateOrganizationStatus = async (req, res) => {
+    try {
+        const { organization_id } = req.params;
+        const { status } = req.body;
+
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Status is required'
+            });
+        }
+
+        if (!['active', 'inactive'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Status must be either "active" or "inactive"'
+            });
+        }
+
+        const updatedOrg = await OrganizationsService.updateOrganizationStatus(organization_id, status);
+
+        if (!updatedOrg) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Organization status updated to ${status} successfully`,
+            data: {
+                organization_id: updatedOrg.organization_id,
+                name: updatedOrg.name,
+                status: updatedOrg.status
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 module.exports = {
     addOrganization,
     createPaymentLink,
@@ -281,6 +314,6 @@ module.exports = {
     deletePaymentLink,
     getAllOrganizations,
     getOrganizationTransactions,
-    getAllTransactions,
-    deleteOrganization
+    deleteOrganization,
+    updateOrganizationStatus,
 }
