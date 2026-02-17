@@ -221,9 +221,9 @@ const getAllOrganizations = async (req, res) => {
 
 const getOrganizationTransactions = async (req, res) => {
     try {
-        const { page = 1, limit = 10 ,search} = req.query;
+        const { page = 1, limit = 10 ,search,filterBy} = req.query;
         const { organization_id } = req.params;
-        const transactions = await OrganizationsService.getTransactionsByOrganization(organization_id, page, limit, search);
+        const transactions = await OrganizationsService.getTransactionsByOrganization(organization_id, page, limit, search,filterBy);
 
         res.json({
             success: true,

@@ -98,19 +98,38 @@ const updateOrganizationStatus = async (organization_id, status) => {
     return updatedOrg;
 };
 
-const getTransactionsByOrganization = async (organization_id, page, limit, search) => {
+const getTransactionsByOrganization = async (organization_id, page, limit, search, filterBy) => {
     const skip = (page - 1) * limit;
-    const transactions = await Transaction.find({ organization_id, $or: [
-        { customer_name: { $regex: search, $options: 'i' } }, 
-        { order_id: { $regex: search, $options: 'i' } },
-        { status: { $regex: search, $options: 'i' } }, 
-        { provider: { $regex: search, $options: 'i' } } 
-    ] }).skip(skip).limit(limit).sort({ createdAt: -1 }).populate({
-        path: 'organization_id',   
-        model: 'Organization',     
-        foreignField: 'organization_id',
-      });
-    const total = await Transaction.countDocuments({ organization_id }).sort({ createdAt: -1 });
+
+    // 1. Build the base query
+    const query = { 
+        organization_id, 
+        $or: [
+            { customer_name: { $regex: search, $options: 'i' } }, 
+            { order_id: { $regex: search, $options: 'i' } },
+            { status: { $regex: search, $options: 'i' } }, 
+            { provider: { $regex: search, $options: 'i' } } 
+        ] 
+    };
+
+    // 2. Only add 'status' if filterBy has a valid value (not empty/null/undefined)
+    if (filterBy && filterBy.trim() !== "") {
+        query.status = filterBy;
+    }
+
+    const transactions = await Transaction.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .populate({
+            path: 'organization_id',   
+            model: 'Organization',     
+            foreignField: 'organization_id',
+        });
+
+    // 3. Use the SAME query for counting so your pagination stays accurate
+    const total = await Transaction.countDocuments(query);
+
     return {
         transactions,
         pagination: {
